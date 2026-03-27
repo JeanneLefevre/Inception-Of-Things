@@ -1,0 +1,43 @@
+VM_TAB = [
+{
+name: "jealefevS",
+ip: "192.168.56.110",
+role: "server",
+script: "./scripts/server.sh",
+network: "private_network",
+memory: "512",
+cpu: "1"
+},
+{
+name: "jealefevSW",
+ip: "192.168.56.111",
+role: "agent",
+script: "./scripts/agent.sh",
+network: "private_network",
+memory: "512",
+cpu: "1"
+}
+]
+
+Vagrant.configure("2") do |config|
+  VM_TAB.each do |machine|
+    config.vm.define machine[:name] do |node|
+      node.vm.box = "debian/bookworm64"
+      node.vm.hostname = machine[:name]
+
+      node.vm.network machine[:network] , ip: machine[:ip]
+
+      node.vm.provider "virtualbox" do |v|
+        v.memory = machine[:memory]
+        v.cpus = machine[:cpu]
+      end
+
+      node.vm.provision "shell",
+        path: machine[:script],
+        env: {
+          "NODE_IP" => machine[:ip],
+          "ROLE" => machine[:role]
+        }
+    end
+  end
+end
